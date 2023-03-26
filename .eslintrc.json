@@ -30,6 +30,7 @@
     ],
     "react/react-in-jsx-scope": "off",
     "import/prefer-default-export": "off",
-    "import/no-named-as-default-member": "off"
+    "import/no-named-as-default-member": "off",
+    "react/jsx-no-bind": "off"
   }
 }
