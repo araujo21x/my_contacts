@@ -6,26 +6,23 @@ import Input from '../Input';
 import Select from '../Select';
 import Button from '../Button';
 import isEmailValid from '../../utils/isEmailValid';
+import useErrors from '../../hooks/useErrors';
 
 export default function ContactForm({ buttonLabel }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [category, setCategory] = useState('');
-  const [errors, setErros] = useState([]);
+
+  const { setError, removeError, getErrorMessageByFieldName } = useErrors();
 
   function handlerNameChange(event) {
     setName(event.target.value);
 
     if (!event.target.value) {
-      setErros((prevState) => [
-        ...prevState,
-        { field: 'name', message: 'Nome é Obrigatório' },
-      ]);
+      setError({ field: 'name', message: 'Nome é obrigatório' });
     } else {
-      setErros((prevState) => prevState.filter(
-        (error) => error.field !== 'name',
-      ));
+      removeError('name');
     }
   }
 
@@ -33,26 +30,14 @@ export default function ContactForm({ buttonLabel }) {
     setEmail(event.target.value);
 
     if (event.target.value && !isEmailValid(event.target.value)) {
-      const errorAlreadyExist = errors.find((error) => error.field === 'email');
-      if (errorAlreadyExist) return;
-
-      setErros((prevState) => [
-        ...prevState,
-        { field: 'email', message: 'email está com erro' },
-      ]);
+      setError({ field: 'email', message: 'E-mail está com erro' });
     } else {
-      setErros((prevState) => prevState.filter(
-        (error) => error.field !== 'email',
-      ));
+      removeError('email');
     }
   }
 
-  function getErrorMessageByFieldName(fieldName) {
-    return errors.find((error) => error.field === fieldName)?.message;
-  }
-
   return (
-    <Form>
+    <Form noValidate>
       <FormGroup error={getErrorMessageByFieldName('name')}>
         <Input
           error={getErrorMessageByFieldName('name')}
@@ -64,6 +49,7 @@ export default function ContactForm({ buttonLabel }) {
 
       <FormGroup error={getErrorMessageByFieldName('email')}>
         <Input
+          type="email"
           error={getErrorMessageByFieldName('email')}
           placeholder="E-mail"
           value={email}
