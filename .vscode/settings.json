@@ -1,0 +1,9 @@
+// pode ajudar para saber qual código estou mexendo, já que muda a titleBar
+{
+  "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#87b702",
+    "titleBar.inactiveBackground": "#87b702",
+    "titleBar.activeForeground": "#000",
+    "titleBar.inactiveForeground": "#000"
+  }
+}
