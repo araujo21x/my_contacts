@@ -34,8 +34,12 @@
     "import/prefer-default-export": "off",
     "import/no-named-as-default-member": "off",
     "react/jsx-no-bind": "off",
-    "react-hooks/exhaustive-deps": ["warn", {
-      "additionalHooks": "(useMyCustomHook|useMyOtherCustomHook)"
-    }]
+    "react-hooks/exhaustive-deps": [
+      "warn",
+      {
+        "additionalHooks": "(useMyCustomHook|useMyOtherCustomHook)"
+      }
+    ],
+    "class-methods-use-this": "off"
   }
 }
