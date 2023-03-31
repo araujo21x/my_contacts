@@ -1,70 +1,107 @@
 import { Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
-  Container, Header, Card, ListContainer, InputSearchContainer,
+  Container, Header, Card, ListHeader, InputSearchContainer,
 } from './styles';
 
 import arrow from '../../assets/images/icons/arrow.svg';
 import edit from '../../assets/images/icons/edit.svg';
 import trash from '../../assets/images/icons/trash.svg';
-// import Loader from '../../components/Loader';
+import Loader from '../../components/Loader';
 // import Modal from '../../components/Modal';
 
 export default function Home() {
   const [contacts, setContacts] = useState([]);
+  const [orderBy, setOrderBy] = useState('asc');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  const filteredContacts = useMemo(() => contacts.filter((contact) => (
+    contact.name.toLowerCase().includes(searchTerm.toLowerCase())
+  )), [contacts, searchTerm]);
 
   useEffect(() => {
-    fetch('http://localhost:3000/contacts').then(async (response) => {
-      setContacts(await response.json());
-    });
-  }, []);
+    async function loadContacts() {
+      try {
+        setIsLoading(true);
+        const response = await fetch(
+          `http://localhost:3000/contacts?orderBy=${orderBy}`,
+        );
+
+        setContacts(await response.json());
+        setIsLoading(false);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadContacts();
+  }, [orderBy]);
+
+  function handleToggleOrderBy() {
+    setOrderBy((prevState) => (prevState === 'asc' ? 'desc' : 'asc'));
+  }
+
+  function handlerChangeSearchTerm(event) {
+    setSearchTerm(event.target.value);
+  }
+
   return (
     <Container>
-      {/* <Modal danger /> */}
-      {/* <Loader /> */}
+      <Loader isLoading={isLoading} />
+
       <InputSearchContainer>
-        <input type="text" placeholder="Pesquisar pelo nome..." />
+        <input
+          value={searchTerm}
+          type="text"
+          placeholder="Pesquisar pelo nome..."
+          onChange={handlerChangeSearchTerm}
+        />
       </InputSearchContainer>
       <Header>
         <strong>
-          {contacts.length}
-          {contacts.length <= 1 ? 'contato' : 'contatos'}
+          {filteredContacts.length}
+          {filteredContacts.length <= 1 ? ' contato' : ' contatos'}
         </strong>
         <Link to="/new">Novo Contato</Link>
       </Header>
 
-      <ListContainer>
-        <header>
-          <button type="button">
-            <span>Nome</span>
-            <img src={arrow} alt="Arrow" />
-          </button>
-        </header>
+      {filteredContacts.length > 0 && (
+        <ListHeader orderBy={orderBy}>
+          <header>
+            <button type="button" onClick={handleToggleOrderBy}>
+              <span>Nome</span>
+              <img src={arrow} alt="Arrow" />
+            </button>
+          </header>
+        </ListHeader>
+      )}
 
-        {contacts.map((contact) => (
-          <Card key={contact.id}>
-            <div className="info">
-              <div className="contact-name">
-                <strong>{contact.name}</strong>
-                {contact.category_name && (<small>{contact.category_name}</small>)}
-              </div>
-              <span>{contact.email}</span>
-              <span>{contact.phone}</span>
+      {filteredContacts.map((contact) => (
+        <Card key={contact.id}>
+          <div className="info">
+            <div className="contact-name">
+              <strong>{contact.name}</strong>
+              {contact.category_name && (<small>{contact.category_name}</small>)}
             </div>
+            <span>{contact.email}</span>
+            <span>{contact.phone}</span>
+          </div>
 
-            <div className="actions">
-              <Link to={`/edit/${contact.id}`}>
-                <img src={edit} alt="Edit" />
-              </Link>
+          <div className="actions">
+            <Link to={`/edit/${contact.id}`}>
+              <img src={edit} alt="Edit" />
+            </Link>
 
-              <button type="button">
-                <img src={trash} alt="trash" />
-              </button>
-            </div>
-          </Card>
-        ))}
+            <button type="button">
+              <img src={trash} alt="trash" />
+            </button>
+          </div>
+        </Card>
+      ))}
 
-      </ListContainer>
     </Container>
   );
 }
