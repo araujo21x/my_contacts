@@ -1,31 +1,51 @@
 import APIError from '../../errors/APIError';
-import delay from '../../utils/delay';
+// import delay from '../../utils/delay';
 
 class HttpClient {
   constructor(baseURL) {
     this.baseURL = baseURL;
   }
 
-  async get(path) {
-    // await delay(2000);
-    const response = await fetch(`${this.baseURL}${path}`);
-    const contentType = response.headers.get('Content-Type');
-
-    if (!contentType.includes('application/json')) {
-      throw new APIError('Erro na conexão com o servidor');
-    }
-
-    const body = await response.json();
-    if (response.ok) return body;
-    throw new APIError(body.error);
+  get(path, options) {
+    return this.makeRequest(path, {
+      method: 'GET',
+      headers: options?.headers,
+    });
   }
 
-  async post(path, body) {
-    await delay(2000);
-    const response = await fetch(`${this.baseURL}${path}`);
-    console.log(body);
+  post(path, options) {
+    return this.makeRequest(path, {
+      method: 'POST',
+      body: options?.body,
+      headers: options?.headers,
+    });
+  }
 
-    return response.json();
+  async makeRequest(path, options) {
+    // await delay(1000);
+    const headers = new Headers();
+    if (options.body) headers.append('Content-Type', 'application/json');
+
+    if (options.headers) {
+      Object.entries(options.headers).forEach(([name, value]) => {
+        headers.append(name, value);
+      });
+    }
+
+    const response = await fetch(`${this.baseURL}${path}`, {
+      method: options.method,
+      body: JSON.stringify(options.body),
+      headers,
+    });
+
+    let responseBody = null;
+    const contentType = response.headers.get('Content-Type');
+    if (contentType.includes('application/json')) {
+      responseBody = await response.json();
+    }
+
+    if (response.ok) return responseBody;
+    throw new APIError(responseBody.error);
   }
 }
 
