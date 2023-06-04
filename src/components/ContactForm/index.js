@@ -1,5 +1,7 @@
 import propTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import {
+  useState, useEffect, forwardRef, useImperativeHandle,
+} from 'react';
 import FormGroup from '../FormGroup';
 import { Form, ButtonContainer } from './styles';
 import Input from '../Input';
@@ -10,7 +12,7 @@ import useErrors from '../../hooks/useErrors';
 import formatPhone from '../../utils/formatPhone';
 import CategoriesService from '../../services/CategoryService';
 
-export default function ContactForm({ buttonLabel, onSubmit }) {
+const ContactForm = forwardRef(({ buttonLabel, onSubmit }, ref) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -24,6 +26,34 @@ export default function ContactForm({ buttonLabel, onSubmit }) {
   } = useErrors();
 
   const isFormValid = (name && errors.length === 0);
+
+  useImperativeHandle(ref, () => ({
+    setFieldsValues: (contact) => {
+      setName('');
+      setEmail(contact.email ?? '');
+      setPhone(formatPhone(contact.phone ?? ''));
+      setCategoryId(contact.category_id ?? '');
+    },
+    resetFields: () => {
+      setName('');
+      setEmail('');
+      setPhone(formatPhone(''));
+      setCategoryId('');
+    },
+  }), []);
+
+  // a maneira mais manual, porem já existe um hook que faz exatamente isso
+  // useEffect(() => {
+  //   const refObject = ref;
+  //   refObject.current = {
+  //     setFieldsValues: (contact) => {
+  //       setName(contact.name);
+  //       setEmail(contact.email);
+  //       setPhone(contact.phone);
+  //       setCategoryId(contact.category_id);
+  //     },
+  //   };
+  // }, [ref]);
 
   useEffect(() => {
     async function loadCategories() {
@@ -71,6 +101,10 @@ export default function ContactForm({ buttonLabel, onSubmit }) {
     });
 
     setIsSubmitting(false);
+    // setName('');
+    // setEmail('');
+    // setPhone('');
+    // setCategoryId('');
   }
 
   return (
@@ -132,9 +166,11 @@ export default function ContactForm({ buttonLabel, onSubmit }) {
       </ButtonContainer>
     </Form>
   );
-}
+});
 
 ContactForm.propTypes = {
   buttonLabel: propTypes.string.isRequired,
   onSubmit: propTypes.func.isRequired,
 };
+
+export default ContactForm;
