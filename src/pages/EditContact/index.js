@@ -40,17 +40,10 @@ export default function EditContact() {
     loadContact();
   }, [id, history, safeAsyncAction]);
 
-  async function handlerSubmit(formData) {
+  async function handlerSubmit(contact) {
     try {
-      const contact = {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        category_id: formData.categoryId,
-      };
-
       await ContactsService.updateContact(id, contact);
-      setContactName(formData.name);
+      setContactName(contact.name);
       toast({ type: 'success', text: 'Contato editado o contato!', duration: 3000 });
     } catch {
       toast({ type: 'danger', text: 'Ocorreu um erro ao editar o contato!', duration: 3000 });
